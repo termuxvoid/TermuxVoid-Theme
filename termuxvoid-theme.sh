@@ -56,6 +56,21 @@ check_dependencies() {
   fi
 }
 
+cleanup() {
+  echo -e "${YELLOW}[*] Cleaning up installation files...${NC}"
+  
+  # Remove cloned repository
+  if [ -d "TermuxVoid-Theme" ]; then
+    rm -rf TermuxVoid-Theme
+    echo -e "${GREEN}[+] Removed theme repository${NC}"
+  fi
+  
+  # Self-destruct the installer script
+  if [ -f "$0" ]; then
+    rm -f "$0"
+    echo -e "${GREEN}[+] Removed installer script${NC}"
+  fi
+}
 # Change default shell to Fish (required for theme)
 set_fish_shell() {
   current_shell=$(basename "$SHELL")
@@ -161,6 +176,7 @@ complete_installation() {
   echo -e "- Your default shell has been changed to Fish"
   echo -e "- Banner requires jp2a package (already checked)"
   echo -e "- Starship prompt is now configured"
+  cleanup
   
   # Wait for user acknowledgement
   read -p "$(echo -e "\n${CYAN}Press Enter to exit (then restart Termux)...${NC}")"
