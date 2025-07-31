@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # TermuxVoid-Theme Installer
 # Version: 3.2
