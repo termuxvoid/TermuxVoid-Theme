@@ -18,7 +18,7 @@ CYAN='\e[1;36m'     # User prompts
 NC='\e[0m'          # No Color (reset)
 
 # List of required packages for the theme to work properly
-REQUIRED_PKGS=("fish" "starship" "git" "jp2a")  # Added starship as requested
+REQUIRED_PKGS=("fish" "starship" "eza" "git" "jp2a")  # Added starship as requested
 
 # Display the script header with version information
 show_header() {
