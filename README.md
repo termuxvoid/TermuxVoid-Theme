@@ -1,4 +1,4 @@
-# TermuxVoid-Theme 🚀
+## TermuxVoid-Theme 🚀
 
 ![TermuxVoid Logo](assets/tvr.png)
 
@@ -25,7 +25,7 @@ A professional terminal customization for Termux that transforms your mobile Lin
 curl -LO https://github.com/termuxvoid/TermuxVoid-Theme/raw/main/termuxvoid-theme.sh && bash termuxvoid-theme.sh
 ```
 
-### Alternative Install (If available in repos)
+### Alternative Install
 ```bash
 apt update && apt install termuxvoid-theme
 ```
