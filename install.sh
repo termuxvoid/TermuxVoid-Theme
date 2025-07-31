@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # TermuxVoid-Theme Installer
-# Version: 2.3
+# Version: 2.6
 # Github: https://github.com/termuxvoid/TermuxVoid-Theme
 
 # Color definitions
@@ -11,61 +11,99 @@ YELLOW='\e[1;33m'
 CYAN='\e[1;36m'
 NC='\e[0m'
 
-header() {
+show_header() {
   clear
-  echo -e "${CYAN}TermuxVoid-Theme Installer v2.3${NC}"
-  echo -e "${GREEN}Custom terminal theming for Termux${NC}\n"
+  echo -e "${CYAN}TermuxVoid-Theme Installer v2.6${NC}"
+  echo -e "${GREEN}Complete terminal customization for Termux${NC}\n"
 }
 
-download_theme() {
-  echo -e "${YELLOW}[*] Downloading theme...${NC}"
-  if [ -d "TermuxVoid-Theme" ]; then
-    rm -rf TermuxVoid-Theme
-  fi
-  git clone --quiet https://github.com/termuxvoid/TermuxVoid-Theme.git || {
+fetch_theme() {
+  echo -e "${YELLOW}[*] Downloading TermuxVoid-Theme...${NC}"
+  [ -d "TermuxVoid-Theme" ] && rm -rf TermuxVoid-Theme
+  git clone --depth=1 --quiet https://github.com/termuxvoid/TermuxVoid-Theme.git || {
     echo -e "${RED}[!] Download failed${NC}"
     exit 1
   }
 }
 
-customize() {
-  # Name customization
-  read -p "$(echo -e "${CYAN}Your name for prompt (blank for default): ${NC}")" username
+customize_prompt() {
+  read -p "$(echo -e "${CYAN}Enter your name for prompt (blank for default): ${NC}")" username
   [ -n "$username" ] && sed -i "s/TermuxVoid/$username/g" TermuxVoid-Theme/assets/starship.toml
-
-  # Banner setup
-  echo -e "${YELLOW}[*] Setting up banner...${NC}"
-  mkdir -p ~/.termux
-  cp TermuxVoid-Theme/assets/tvr.png ~/.termux/ 2>/dev/null || echo -e "${RED}[!] Banner image not found${NC}"
-  
-  # Remove motd if exists
-  [ -f "$PREFIX/etc/motd" ] && rm -f "$PREFIX/etc/motd"
 }
 
-install() {
-  echo -e "${YELLOW}[*] Installing files...${NC}"
-  mkdir -p ~/.config/{fish,starship.toml} 2>/dev/null
+setup_banner() {
+  read -p "$(echo -e "${CYAN}Do you want a custom banner? [y/N]: ${NC}")" banner_choice
+  if [[ "$banner_choice" =~ ^[Yy]$ ]]; then
+    read -p "$(echo -e "${YELLOW}Enter custom banner path or leave blank for default: ${NC}")" banner_path
+    
+    mkdir -p ~/.termux
+    
+    # Copy wlcm.sh for custom banner
+    if [ -f "TermuxVoid-Theme/assets/wlcm.sh" ]; then
+      cp TermuxVoid-Theme/assets/wlcm.sh ~/.termux/
+      chmod +x ~/.termux/wlcm.sh
+      echo -e "${GREEN}[+] Banner welcome script installed${NC}"
+    fi
+
+    if [ -z "$banner_path" ]; then
+      # Use default banner
+      if [ -f "TermuxVoid-Theme/assets/tvr.png" ]; then
+        cp TermuxVoid-Theme/assets/tvr.png ~/.termux/
+        banner_path="$HOME/.termux/tvr.png"
+        echo -e "${GREEN}[+] Using default banner${NC}"
+      else
+        echo -e "${RED}[!] Default banner not found${NC}"
+        return
+      fi
+    elif [ -f "$banner_path" ]; then
+      # Use custom banner
+      cp "$banner_path" ~/.termux/tvr.png
+      banner_path="$HOME/.termux/tvr.png"
+      echo -e "${GREEN}[+] Custom banner installed${NC}"
+    else
+      echo -e "${RED}[!] File not found: $banner_path${NC}"
+      return
+    fi
+
+    # Replace #logo in config.fish
+    sed -i "s|#logo|~/.termux/wlcm.sh '$banner_path'|g" TermuxVoid-Theme/assets/config.fish
+    [ -f "$PREFIX/etc/motd" ] && rm -f "$PREFIX/etc/motd"
+    echo -e "${GREEN}[+] Banner configuration complete${NC}"
+  fi
+}
+
+install_files() {
+  echo -e "${YELLOW}[*] Installing theme files...${NC}"
+  mkdir -p ~/.config/fish ~/.termux
+  
+  # Fish configuration
   cp TermuxVoid-Theme/assets/config.fish ~/.config/fish/
-  cp TermuxVoid-Theme/assets/starship.toml ~/.config/
-  cp TermuxVoid-Theme/assets/colors.properties ~/.termux/
-  cp TermuxVoid-Theme/assets/font.ttf ~/.termux/
+  
+  # Other theme files
+  cp TermuxVoid-Theme/assets/{starship.toml,colors.properties,font.ttf} ~/.termux/
+  mv ~/.termux/{starship.toml} ~/.config/
+  
+  echo -e "${GREEN}[+] All files installed${NC}"
 }
 
 complete_install() {
   rm -rf TermuxVoid-Theme
   echo -e "\n${GREEN}[✓] Installation complete!${NC}"
-  echo -e "${YELLOW}Restart Termux to apply changes${NC}"
+  echo -e "${YELLOW}To complete setup:${NC}"
+  echo -e "1. Restart Termux"
+  echo -e "2. Or run: ${CYAN}source ~/.config/fish/config.fish${NC}"
+  echo -e "\n${YELLOW}For banner display:${NC}"
+  echo -e "- Install jp2a: ${CYAN}pkg install jp2a${NC}"
+  echo -e "- Make sure ~/.termux/wlcm.sh is executable"
 }
 
 # Main execution
-header
-read -p "$(echo -e "${CYAN}Proceed with installation? [Y/n]: ${NC}")" confirm
-case "$confirm" in
-  [nN]) exit ;;
-  *) 
-    download_theme
-    customize
-    install
-    complete_install
-    ;;
-esac
+show_header
+read -p "$(echo -e "${CYAN}Start installation? [Y/n]: ${NC}")" confirm
+[[ "$confirm" =~ ^[Nn]$ ]] && exit
+
+fetch_theme
+customize_prompt
+setup_banner
+install_files
+complete_install
