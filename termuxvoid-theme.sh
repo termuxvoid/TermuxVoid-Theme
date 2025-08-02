@@ -60,8 +60,8 @@ check_dependencies() {
   # Install missing packages if any
   if [ ${#missing_pkgs[@]} -gt 0 ]; then
     echo -e "\n${YELLOW}[*] Installing missing packages...${NC}"
-    pkg update -y && pkg upgrade -y
-    pkg install -y "${missing_pkgs[@]}" || {
+    apt update -y && apt upgrade -y
+    apt install -y "${missing_pkgs[@]}" || {
       echo -e "${RED}[!] Failed to install dependencies${NC}"
       exit 1
     }
