@@ -223,7 +223,7 @@ setup_banner() {
                     echo -e "${GREEN}[+] Installed welcome script to $TERMUX_DIR/wlcm.sh${NC}"
                     
                     # Add the welcome script execution to fish config
-                    if sed -i "s|#logo|bash ~/.termux/wlcm.sh|g" "$THEME_DIR/assets/config.fish"; then
+                    if sed -i "s|#logo|bash ~/.termux/wlcm.sh\njp2a -f --colors '$banner_path'|g" "$THEME_DIR/assets/config.fish"; then
                         echo -e "${GREEN}[+] Configured Fish to display banner${NC}"
                     else
                         echo -e "${RED}[!] Failed to configure Fish banner display${NC}"
